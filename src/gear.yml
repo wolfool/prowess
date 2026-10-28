@@ -1,0 +1,460 @@
+# ############################################################################
+#  장비 능력치와 강화
+#
+#  아래 표는 **처음 한 번만** 쓰입니다. 강화 창에 장비를 넣거나 장신구를 끼면
+#  그때 이 값이 아이템에 새겨지고, 그 뒤로는 아이템이 자기 능력치를 들고
+#  다닙니다. 그래서 남에게 준 무기도 강화 단계를 그대로 갖고 갑니다.
+#
+#  능력치 이름 — 공격력 · 방어 · 최대 체력 · 치명타 확률 · 치명타 피해 ·
+#                관통 · 흡혈 · 공격 속도 · 이동 속도
+#  비율짜리(치명타 확률·관통·흡혈·속도)는 100 이 100% 입니다.
+#
+#  키는 **CraftEngine 아이디**(콜론 포함)나 **바닐라 재질**입니다.
+#  아이디를 먼저 보므로 토파즈 검(golden_sword 바탕)과 바닐라 금검이
+#  섞이지 않습니다.
+#
+#  고친 뒤 /prowess 리로드
+# ############################################################################
+
+# 이 숫자가 올라가면 서버 파일을 백업하고 새 것으로 바꿉니다.
+# 고친 내용은 _backup/ 에 남습니다.
+config-version: 5
+
+enhance:
+  # 여기까지 올릴 수 있습니다.
+  max-level: 15
+
+  # 한 단계마다 **원래 능력치의 이 비율만큼**이 얹힙니다.
+  # 0.10 이면 +10 에서 원래의 2배가 됩니다 (1 + 10×0.10).
+  # 곱이 아니라 덧셈이라 +10 이 +5 의 딱 두 배입니다.
+  per-level: 0.10
+
+  # 여기까지는 실패해도 단계가 안 내려갑니다.
+  safe-level: 3
+
+  # 실패하면 한 단계 내려갑니다 (안전 구간 위에서만).
+  # **장비가 부서지지는 않습니다.** 부수는 강화는 사람을 떠나게 합니다.
+  downgrade-on-fail: true
+
+  # ------------------------------------------------------------------------
+  #  단계별 조건
+  #
+  #  적어 둔 것 중 **그 이하에서 가장 큰 것**이 쓰입니다 — 1·4·7… 만 적어도
+  #  사이 단계가 알아서 채워집니다.
+  #
+  #  재료는 **reforge1 팩의 강화석**입니다. 그림만 옮겨 두고 쓸 곳이 없던
+  #  36종인데, 색·크기가 나뉘어 있어 단계를 나누기에 딱 맞습니다.
+  #  올라갈수록 소형 → 대형, 초록 → 파랑 → 보라 → 빨강으로 갑니다.
+  # ------------------------------------------------------------------------
+  steps:
+    1:
+      chance: 1.0
+      cost: 2000
+      material: "reforge1:green_small1"
+      material-fallback: LIME_DYE
+      material-amount: 1
+    3:
+      chance: 0.9
+      cost: 6000
+      material: "reforge1:green_big1"
+      material-fallback: LIME_DYE
+      material-amount: 1
+    5:
+      chance: 0.75
+      cost: 15000
+      material: "reforge1:blue_small2"
+      material-fallback: BLUE_DYE
+      material-amount: 2
+    7:
+      chance: 0.55
+      cost: 40000
+      material: "reforge1:blue_big2"
+      material-fallback: BLUE_DYE
+      material-amount: 2
+    9:
+      chance: 0.4
+      cost: 90000
+      material: "reforge1:purple_small3"
+      material-fallback: PURPLE_DYE
+      material-amount: 2
+    11:
+      chance: 0.28
+      cost: 180000
+      material: "reforge1:purple_big3"
+      material-fallback: PURPLE_DYE
+      material-amount: 3
+    13:
+      chance: 0.18
+      cost: 350000
+      material: "reforge1:red_big3"
+      material-fallback: RED_DYE
+      material-amount: 3
+    15:
+      chance: 0.1
+      cost: 700000
+      material: "reforge1:red_big3"
+      material-fallback: RED_DYE
+      material-amount: 5
+
+# ---------------------------------------------------------------------------
+#  장비별 기본 능력치
+# ---------------------------------------------------------------------------
+items:
+
+  # ============================================================ 토파즈 한 벌
+  # CraftEngine 기본 자원. 상점·제작으로 얻는 중간 단계 장비입니다.
+  "default:topaz_sword":
+    weapon: true
+    stats:
+      공격력: 6
+      치명타 확률: 5
+  "default:topaz_axe":
+    weapon: true
+    stats:
+      공격력: 8
+      치명타 피해: 10
+  "default:topaz_trident":
+    weapon: true
+    stats:
+      공격력: 7
+      관통: 10
+  "default:topaz_bow":
+    weapon: true
+    stats:
+      공격력: 5
+      치명타 확률: 8
+  "default:topaz_crossbow":
+    weapon: true
+    stats:
+      공격력: 6
+      관통: 8
+  "default:topaz_pickaxe":
+    stats:
+      공격력: 2
+  "default:topaz_helmet":
+    stats:
+      방어: 8
+      최대 체력: 2
+  "default:topaz_chestplate":
+    stats:
+      방어: 16
+      최대 체력: 4
+  "default:topaz_leggings":
+    stats:
+      방어: 12
+      최대 체력: 2
+  "default:topaz_boots":
+    stats:
+      방어: 8
+      이동 속도: 2
+
+  # ====================================================== 어둠의 여왕 (상급)
+  # fox 팩. 보스 급 무기라 값을 크게 줬습니다.
+  "fox:sword_dark_queen":
+    weapon: true
+    stats:
+      공격력: 14
+      치명타 확률: 10
+      치명타 피해: 20
+  "fox:axe_dark_queen":
+    weapon: true
+    stats:
+      공격력: 18
+      치명타 피해: 25
+  "fox:spear_dark_queen":
+    weapon: true
+    stats:
+      공격력: 15
+      관통: 25
+  "fox:bow_dark_queen":
+    weapon: true
+    stats:
+      공격력: 12
+      치명타 확률: 15
+  "fox:staff_dark_queen":
+    weapon: true
+    stats:
+      공격력: 11
+      흡혈: 8
+
+  # ================================================================ 숲빛 한 벌
+  "fox:g1":
+    weapon: true
+    stats:
+      공격력: 10
+      이동 속도: 3
+  "fox:g5":
+    stats:
+      공격력: 4
+  "fox:g6":
+    stats:
+      방어: 20
+
+  # =============================================================== W 시리즈
+  # 생김새가 다 다른 3D 무기들. 성격을 하나씩 달리 줬습니다.
+  "fox:w2":
+    weapon: true
+    stats:
+      공격력: 10
+      관통: 15
+  "fox:w3":
+    weapon: true
+    stats:
+      공격력: 9
+      흡혈: 5
+  "fox:w4":
+    weapon: true
+    stats:
+      공격력: 7
+      치명타 확률: 6
+  "fox:w7":
+    weapon: true
+    stats:
+      공격력: 12
+      치명타 피해: 15
+  "fox:w8":
+    weapon: true
+    stats:
+      공격력: 7
+      공격 속도: 15
+  "fox:w10":
+    weapon: true
+    stats:
+      공격력: 8
+      공격 속도: 8
+  # 화염 대검. 전용 기술 넷이 걸린 무기라 조금 세게 잡았습니다.
+  # 느리고 무겁게 — 공격 속도를 깎고 한 방을 키웁니다
+  "fox:w11":
+    weapon: true
+    stats:
+      공격력: 15
+      치명타 피해: 18
+      공격 속도: -8
+  "fox:w12":
+    weapon: true
+    stats:
+      공격력: 10
+      치명타 확률: 8
+  "fox:w14":
+    stats:
+      방어: 18
+  "fox:w16":
+    weapon: true
+    stats:
+      공격력: 9
+      흡혈: 6
+  "fox:w17":
+    weapon: true
+    stats:
+      공격력: 8
+      치명타 확률: 12
+  "fox:w18":
+    weapon: true
+    stats:
+      공격력: 16
+      공격 속도: -10      # 무거운 망치. 세지만 느립니다
+  "fox:w21":
+    weapon: true
+    stats:
+      공격력: 8
+      치명타 확률: 5
+  "fox:w32":
+    weapon: true
+    stats:
+      공격력: 13
+      치명타 피해: 18
+
+  # ============================================================== 그 밖
+  "bk:pitchfork":
+    weapon: true
+    stats:
+      공격력: 5
+      관통: 8
+
+  # =========================================================== 장신구 · 반지
+  #
+  # accessory 팩의 반지 9종. 그림만 있고 쓸 곳이 없던 것들입니다.
+  # **재료 등급대로 값을 매겼습니다** — 구리 < 철 < 금 < 청금석 < 에메랄드
+  # < 다이아몬드. 화염·물 반지는 값이 아니라 **성격**이 다릅니다.
+  "accessory:normal_ring":
+    stats:
+      최대 체력: 2
+  "accessory:copper_ring":
+    stats:
+      공격력: 2
+      최대 체력: 2
+  "accessory:iron_ring":
+    stats:
+      방어: 12
+      최대 체력: 2
+  "accessory:golden_ring":
+    stats:
+      공격력: 5
+      치명타 확률: 3
+  "accessory:lapis_ring":
+    stats:
+      방어: 20
+      최대 체력: 4
+  "accessory:emerald_ring":
+    stats:
+      공격력: 6
+      이동 속도: 4
+      흡혈: 3
+  "accessory:diamond_ring":
+    stats:
+      공격력: 9
+      방어: 15
+      치명타 확률: 5
+  # 화염 — 치고 빠지는 쪽. 세지만 무릅니다
+  "accessory:fire_ring":
+    stats:
+      공격력: 10
+      치명타 피해: 20
+      방어: -10
+  # 물 — 버티는 쪽. 단단하지만 약하게 칩니다
+  "accessory:water_ring":
+    stats:
+      방어: 30
+      최대 체력: 6
+      공격력: -3
+
+  # ------------------------------------------------------------------ 룬
+  #
+  # rune1 팩 12종. 반지가 값(수치)이라면 룬은 **성격**입니다 —
+  # 하나씩 뚜렷한 한 가지를 크게 줍니다.
+  "rune1:normal1":
+    stats:
+      최대 체력: 4
+  "rune1:normal2":
+    stats:
+      방어: 15
+  "rune1:normal3":
+    stats:
+      공격력: 4
+  "rune1:red":
+    stats:
+      공격력: 12
+  "rune1:blue":
+    stats:
+      방어: 35
+  "rune1:green":
+    stats:
+      흡혈: 10
+  "rune1:purple":
+    stats:
+      치명타 피해: 35
+  "rune1:orange":
+    stats:
+      공격 속도: 12
+  "rune1:yellow":
+    stats:
+      치명타 확률: 10
+  "rune1:pink":
+    stats:
+      최대 체력: 8
+  "rune1:navy":
+    stats:
+      관통: 20
+  "rune1:lime":
+    stats:
+      이동 속도: 8
+
+  # 강림도령의 붓 — 받아 온 보스 무기. 스킬로 싸우는 무기라
+  # 평타는 낮고 대신 관통이 붙습니다
+  "gangrim:gangrim_brush":
+    weapon: true
+    stats:
+      공격력: 11
+      관통: 18
+      공격 속도: 10
+
+  # ============================================================== 바닐라
+  # 아이디가 없는 바닐라 장비도 강화할 수 있게 해 둡니다.
+  # 커스텀 무기보다 낮게 잡아 갈아탈 이유를 남깁니다.
+  NETHERITE_SWORD:
+    weapon: true
+    stats:
+      공격력: 5
+      치명타 확률: 3
+  DIAMOND_SWORD:
+    weapon: true
+    stats:
+      공격력: 3
+  NETHERITE_AXE:
+    weapon: true
+    stats:
+      공격력: 6
+  BOW:
+    weapon: true
+    stats:
+      공격력: 3
+  TRIDENT:
+    weapon: true
+    stats:
+      공격력: 4
+      관통: 5
+  SHIELD:
+    stats:
+      방어: 10
+  NETHERITE_HELMET:
+    stats:
+      방어: 6
+      최대 체력: 2
+  NETHERITE_CHESTPLATE:
+    stats:
+      방어: 12
+      최대 체력: 2
+  NETHERITE_LEGGINGS:
+    stats:
+      방어: 9
+  NETHERITE_BOOTS:
+    stats:
+      방어: 6
+  DIAMOND_HELMET:
+    stats:
+      방어: 4
+  DIAMOND_CHESTPLATE:
+    stats:
+      방어: 8
+  DIAMOND_LEGGINGS:
+    stats:
+      방어: 6
+  DIAMOND_BOOTS:
+    stats:
+      방어: 4
+  ELYTRA:
+    stats:
+      이동 속도: 5
+
+# ---------------------------------------------------------------------------
+#  장신구 — 어느 칸에 들어가는가
+#
+#  여기 적힌 것은 창에 넣으면 **자동으로 그 칸의 물건이 됩니다.** 손으로
+#  /장신구 만들기 를 칠 필요가 없습니다.
+#
+#  종류 — ring(반지 두 칸) · necklace(목걸이) · earring(귀걸이)
+# ---------------------------------------------------------------------------
+accessories:
+  "accessory:normal_ring": ring
+  "accessory:copper_ring": ring
+  "accessory:iron_ring": ring
+  "accessory:golden_ring": ring
+  "accessory:lapis_ring": ring
+  "accessory:emerald_ring": ring
+  "accessory:diamond_ring": ring
+  "accessory:fire_ring": ring
+  "accessory:water_ring": ring
+  # 룬은 목걸이 자리에 겁니다. 반지가 아홉인데 목·귀가 비면
+  # 창 절반이 놀기 때문입니다
+  "rune1:normal1": necklace
+  "rune1:normal2": necklace
+  "rune1:normal3": necklace
+  "rune1:red": necklace
+  "rune1:blue": necklace
+  "rune1:green": necklace
+  "rune1:purple": necklace
+  "rune1:orange": earring
+  "rune1:yellow": earring
+  "rune1:pink": earring
+  "rune1:navy": earring
+  "rune1:lime": earring

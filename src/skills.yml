@@ -1,0 +1,1186 @@
+# ############################################################################
+#  무기 스킬
+#
+#  무기 하나에 **넷까지** 걸립니다. 강화 단계가 오르면 하나씩 열립니다 —
+#  그래야 강화가 "숫자가 조금 오른다" 가 아니라 **새로 할 수 있는 일이
+#  생긴다** 가 됩니다.
+#
+#      우클릭              +0   무기를 얻자마자
+#      웅크리기 + 우클릭    +4
+#      좌클릭 (허공)       +8
+#      웅크리기 + 좌클릭    +12  마지막 한 방
+#
+#  좌클릭은 **허공을 칠 때만** 봅니다. 블록을 치면 캐는 동작이고 몹을 치면
+#  평타라 각각 다른 이벤트로 갑니다 — 겹치지 않습니다.
+#
+#  ────────────────────────────────────────────────────────────────────────
+#  갈래 16종
+#  ────────────────────────────────────────────────────────────────────────
+#    참격      검기가 앞으로 날아간다
+#    회전베기  세 바퀴 돌며 한 바퀴마다 벤다
+#    돌진      잔상을 남기며 꿰뚫고 지나간다
+#    도약      뛰어올랐다 내리찍는다 (고리가 퍼진다)
+#    각성      잠깐 강해진다 (오라가 감싼다)
+#    꿰뚫기    한 줄에 선 것을 다 꿰뚫는다
+#    빙결      얼음이 터지며 얼려 붙인다
+#    운석      하늘에서 불덩이가 떨어진다 (자리를 미리 알려 준다)
+#    연쇄      번개가 적에서 적으로 튀어 옮겨 간다
+#    소용돌이  끌어당기며 계속 벤다
+#    균열      땅이 갈라지며 앞으로 나아간다
+#    처형      다친 것일수록 크게 들어간다 (최대 3배)
+#    수호      흡수 하트 + 저항
+#    띄우기    띄워 올리고 연달아 벤다
+#    연사      화살을 부채꼴로 쏟아낸다
+#
+#  power    피해 배수. 기준은 **그 사람의 공격력**입니다
+#  cooldown 다시 쓰기까지 (초)
+#  range    닿는 거리 (블록)
+#  duration 각성·빙결처럼 이어지는 것의 시간 (초)
+#  bleed    출혈 **한 겹이 1초에 넣는 피해**. 여기만 **배수가 아니라 그냥
+#           숫자**입니다 — 공격력을 안 봅니다.
+#
+#           왜 다른가. 출혈은 작은 값을 자주 넣는데, 그 값이 피해 계산을
+#           다시 타면서 공격력이 통째로 얹혔습니다. 평타가 21 이면 출혈
+#           한 틱도 21 이 되어 "지속 피해" 가 아니라 "평타 연타" 였습니다.
+#           지금은 적은 값이 그대로 들어갑니다 (방어구도 안 깎습니다).
+#
+#  고친 뒤 /prowess 리로드
+# ############################################################################
+
+# 이 숫자가 올라가면 서버 파일을 백업하고 새 것으로 바꿉니다.
+# 고친 내용은 _backup/ 에 남습니다.
+config-version: 7
+
+skills:
+
+  # ══════════════════════════════════════════════════ 토파즈 — 첫 커스텀 장비
+  topaz_slash:
+    name: "&6토파즈 참격"
+    type: 참격
+    cooldown: 6
+    power: 1.8
+    range: 8
+    lore: ["&7주황빛 검기가 앞으로 날아간다"]
+  topaz_whirl:
+    name: "&6토파즈 회전"
+    type: 회전베기
+    cooldown: 11
+    power: 1.6
+    range: 4.0
+    lore: ["&7세 바퀴 돌며 둘레를 벤다"]
+  topaz_leap:
+    name: "&6토파즈 도약"
+    type: 도약
+    cooldown: 14
+    power: 2.4
+    range: 4.5
+    lore: ["&7뛰어올랐다 내리찍는다"]
+  topaz_guard:
+    name: "&6토파즈 수호"
+    type: 수호
+    cooldown: 30
+    power: 3
+    duration: 8
+    lore: ["&7보석이 몸을 감싼다"]
+
+  topaz_cleave_axe:
+    name: "&6토파즈 분쇄"
+    type: 참격
+    cooldown: 7
+    power: 2.2
+    range: 7
+    lore: ["&7무겁게 앞을 가른다"]
+  topaz_fissure:
+    name: "&6토파즈 균열"
+    type: 균열
+    cooldown: 13
+    power: 2.4
+    range: 10
+    lore: ["&7땅이 갈라지며 앞으로 나아간다"]
+  topaz_upper:
+    name: "&6토파즈 띄우기"
+    type: 띄우기
+    cooldown: 12
+    power: 1.8
+    range: 3.5
+    lore: ["&7띄워 올리고 연달아 벤다"]
+  topaz_exec:
+    name: "&6토파즈 마무리"
+    type: 처형
+    cooldown: 20
+    power: 2.2
+    range: 4
+    lore: ["&7다친 것일수록 크게 들어간다"]
+
+  topaz_pierce:
+    name: "&6토파즈 관통"
+    type: 꿰뚫기
+    cooldown: 7
+    power: 2.0
+    range: 14
+    lore: ["&7한 줄에 선 것을 다 꿰뚫는다"]
+  topaz_dash:
+    name: "&6토파즈 돌진"
+    type: 돌진
+    cooldown: 10
+    power: 2.0
+    range: 7
+    lore: ["&7잔상을 남기며 뚫고 지나간다"]
+  topaz_nova:
+    name: "&6토파즈 파동"
+    type: 빙결
+    cooldown: 16
+    power: 1.8
+    range: 5
+    duration: 3
+    lore: ["&7둘레가 얼어붙는다"]
+  topaz_meteor:
+    name: "&6토파즈 낙성"
+    type: 운석
+    cooldown: 26
+    power: 3.5
+    range: 4
+    duration: 3
+    lore: ["&7보는 자리로 불덩이가 떨어진다"]
+
+  topaz_barrage:
+    name: "&6토파즈 연사"
+    type: 연사
+    cooldown: 9
+    power: 2.0
+    lore: ["&7화살을 부채꼴로 쏟아낸다"]
+  topaz_focus:
+    name: "&6토파즈 집중"
+    type: 각성
+    cooldown: 28
+    power: 2
+    duration: 9
+    lore: ["&7손이 빨라지고 세진다"]
+  topaz_chain:
+    name: "&6토파즈 연쇄"
+    type: 연쇄
+    cooldown: 15
+    power: 1.8
+    range: 8
+    lore: ["&7번개가 튀어 옮겨 간다"]
+
+  # ══════════════════════════════════════════════ 어둠의 여왕 — 보스 급 무기
+  dq_slash:
+    name: "&5여왕의 참격"
+    type: 참격
+    cooldown: 5
+    power: 2.6
+    range: 10
+    lore: ["&7자줏빛 검기가 멀리까지 뻗는다"]
+  dq_vortex:
+    name: "&5여왕의 심연"
+    type: 소용돌이
+    cooldown: 18
+    power: 2.4
+    range: 5
+    duration: 4
+    lore: ["&7끌어당기며 계속 벤다"]
+  dq_exec:
+    name: "&5여왕의 처형"
+    type: 처형
+    cooldown: 16
+    power: 3.0
+    range: 5
+    lore: ["&7다친 것일수록 크게 들어간다"]
+  dq_meteor:
+    name: "&5여왕의 낙성"
+    type: 운석
+    cooldown: 30
+    power: 5.0
+    range: 6
+    duration: 5
+    lore: ["&7하늘이 무너져 내린다"]
+
+  dq_whirl:
+    name: "&5여왕의 소용돌이"
+    type: 회전베기
+    cooldown: 9
+    power: 2.4
+    range: 5.0
+    lore: ["&7세 바퀴 돌며 둘레를 벤다"]
+  dq_fissure:
+    name: "&5여왕의 균열"
+    type: 균열
+    cooldown: 14
+    power: 3.0
+    range: 14
+    lore: ["&7땅을 가르며 멀리 나아간다"]
+  dq_leap:
+    name: "&5여왕의 강림"
+    type: 도약
+    cooldown: 16
+    power: 3.6
+    range: 6
+    lore: ["&7높이 뛰어올랐다 내리찍는다"]
+  dq_awaken:
+    name: "&5여왕의 각성"
+    type: 각성
+    cooldown: 32
+    power: 3
+    duration: 12
+    lore: ["&7자줏빛 기운이 몸을 감싼다"]
+
+  dq_pierce:
+    name: "&5여왕의 창격"
+    type: 꿰뚫기
+    cooldown: 6
+    power: 2.8
+    range: 18
+    lore: ["&7아주 멀리까지 곧게 뻗는다"]
+  dq_upper:
+    name: "&5여왕의 부양"
+    type: 띄우기
+    cooldown: 11
+    power: 2.2
+    range: 4.5
+    lore: ["&7띄워 올리고 연달아 벤다"]
+  dq_chain:
+    name: "&5여왕의 연쇄"
+    type: 연쇄
+    cooldown: 13
+    power: 2.6
+    range: 10
+    lore: ["&7자줏빛 번개가 튀어 옮겨 간다"]
+  dq_nova:
+    name: "&5여왕의 결빙"
+    type: 빙결
+    cooldown: 20
+    power: 2.8
+    range: 7
+    duration: 5
+    lore: ["&7둘레가 통째로 얼어붙는다"]
+
+  dq_barrage:
+    name: "&5여왕의 연사"
+    type: 연사
+    cooldown: 8
+    power: 2.8
+    lore: ["&7자줏빛 화살이 쏟아진다"]
+  dq_guard:
+    name: "&5여왕의 장막"
+    type: 수호
+    cooldown: 26
+    power: 4
+    duration: 10
+    lore: ["&7어둠이 몸을 지킨다"]
+  dq_dash:
+    name: "&5여왕의 그림자"
+    type: 돌진
+    cooldown: 9
+    power: 2.6
+    range: 9
+    lore: ["&7그림자를 남기며 꿰뚫고 지나간다"]
+
+  # ══════════════════════════════════════════════════════════ 숲빛 (G 시리즈)
+  forest_leap:
+    name: "&a숲빛 도약"
+    type: 도약
+    cooldown: 12
+    power: 2.5
+    range: 4.5
+    lore: ["&7뛰어올랐다 내리찍는다"]
+  forest_whirl:
+    name: "&a숲빛 회전"
+    type: 회전베기
+    cooldown: 10
+    power: 1.8
+    range: 4.0
+    lore: ["&7세 바퀴 돌며 둘레를 벤다"]
+  forest_dash:
+    name: "&a숲빛 질주"
+    type: 돌진
+    cooldown: 9
+    power: 2.0
+    range: 7
+    lore: ["&7바람처럼 뚫고 지나간다"]
+  forest_empower:
+    name: "&a숲빛 축복"
+    type: 각성
+    cooldown: 26
+    power: 2
+    duration: 10
+    lore: ["&7잎사귀가 몸을 감싼다"]
+
+  # ══════════════════════════════════════════════════════════════ W 시리즈
+  # 하나하나 성격을 달리 줬습니다. 무엇을 드느냐가 곧 어떻게 싸우느냐입니다.
+
+  # w2 은잎 창 — 찌르고 밀어내는 쪽
+  w2_pierce:
+    name: "&f은잎 관통"
+    type: 꿰뚫기
+    cooldown: 6
+    power: 2.0
+    range: 14
+    lore: ["&7긴 창이 한 줄을 꿰뚫는다"]
+  w2_upper:
+    name: "&f은잎 부양"
+    type: 띄우기
+    cooldown: 11
+    power: 1.8
+    range: 4
+    lore: ["&7창끝으로 띄워 올린다"]
+  w2_dash:
+    name: "&f은잎 돌격"
+    type: 돌진
+    cooldown: 10
+    power: 2.2
+    range: 8
+    lore: ["&7창을 앞세워 뛰어든다"]
+  w2_fissure:
+    name: "&f은잎 관통격"
+    type: 균열
+    cooldown: 15
+    power: 2.6
+    range: 12
+    lore: ["&7땅을 가르며 앞으로 나아간다"]
+
+  # ══════════════════════════════════════════ w3 혈화도 — 전용 스킬 넷
+  #
+  # **그림을 보고 이름을 고쳤습니다.** 오래 "핏빛 단검" 으로 적어 두었지만
+  # 실물은 날이 넓고 끝이 뭉툭한 무거운 도(刀) 입니다. 피가 흘러 맺히는
+  # 모습을 그대로 이름으로 삼았습니다 — **혈화도(血花刀)**.
+  #
+  # 그래서 이 무기가 큰 검과 다른 까닭은 **빠르다**가 아니라
+  # **찢어 놓고 아물기 전에 마무리한다** 입니다. 넷이 한 흐름입니다.
+  #
+  #   1. 혈참 으로 출혈을 쌓고
+  #   2. 핏빛 잔상 으로 등 뒤를 잡고 (다음 한 대 확정 치명타)
+  #   3. 피의 낙인 으로 쌓인 출혈을 터뜨려 옆으로 번지고
+  #   4. 처형 무도 로 여섯 번 순간이동하며 베고 통째로 터뜨린다
+  #
+  # 출혈은 다섯 겹까지 쌓이고, 겹칠수록 초당 피해가 커집니다.
+  # 터뜨리면 남은 시간만큼이 한 번에 들어갑니다.
+  #
+  # 둘째 칸의 **갈래 이름은 `그림자 걸음` 그대로**입니다 (자바 쪽 SHADOW_STEP).
+  # 보이는 이름만 핏빛으로 맞췄습니다 — 넷 중 하나만 그림자면 남의 기술처럼
+  # 보이고, 암살자의 &8그림자 표창&r 과도 헷갈립니다.
+  w3_rend:
+    name: "&4혈참"
+    type: 혈참
+    cooldown: 6
+    power: 1.6
+    range: 3
+    duration: 8
+    bleed: 2.0          # 한 겹 초당 2. 다섯 겹이면 초당 10, 8초에 80
+    lore:
+      - "&7앞으로 파고들며 &fX 자로 세 번&7 긋는다"
+      - "&8그을 때마다 출혈이 한 겹씩 쌓인다 (최대 5겹)"
+      - "&8출혈은 8초 동안 계속 깎는다"
+  w3_shadow:
+    name: "&4핏빛 잔상"
+    type: 그림자 걸음
+    cooldown: 12
+    power: 1.0
+    range: 12
+    duration: 3
+    lore:
+      - "&7보는 것의 &f등 뒤&7로 사라졌다 나타난다"
+      - "&8다음 한 대는 &c확정 치명타"
+      - "&83초 동안 안 보이고 빨라진다"
+      - "&8볼 게 없으면 그냥 앞으로 미끄러진다"
+  w3_brand:
+    name: "&c피의 낙인"
+    type: 피의 낙인
+    cooldown: 16
+    power: 1.8
+    range: 5
+    duration: 6
+    bleed: 1.3          # 옆으로 번져 옮은 상처. 본체보다 얕습니다
+    lore:
+      - "&7둘레에 낙인을 찍고 &f잠깐 뒤에 터뜨린다"
+      - "&8쌓인 출혈이 남은 만큼 한 번에 들어간다"
+      - "&8터진 자리에서 &c옆으로 번진다"
+      - "&8출혈이 많이 쌓였을 때 쓰는 것이 이득이다"
+  w3_waltz:
+    name: "&4처형 무도"
+    type: 처형 무도
+    cooldown: 40
+    power: 2.2
+    range: 8
+    bleed: 2.0          # 베는 여섯 번마다 한 겹씩
+    lore:
+      - "&7&l여섯 번 순간이동&7하며 하나씩 벤다"
+      - "&8베는 동안 얻어맞지 않는다"
+      - "&8마지막에 제자리로 돌아와"
+      - "&8쌓인 출혈을 &c1.5배로 통째로 터뜨린다"
+
+  # w4 나무 활 — 쏘는 쪽. 기술은 아래 궁수(ranger_*) 칸에 있습니다
+
+  # w7 서릿날 — 얼리는 쪽
+  w7_slash:
+    name: "&b서릿날 참격"
+    type: 참격
+    cooldown: 6
+    power: 2.2
+    range: 8
+    lore: ["&7얼음빛 검기가 날아간다"]
+  w7_nova:
+    name: "&b서리 폭발"
+    type: 빙결
+    cooldown: 14
+    power: 2.2
+    range: 6
+    duration: 5
+    lore: ["&7둘레가 얼어붙는다"]
+  w7_whirl:
+    name: "&b서리 회전"
+    type: 회전베기
+    cooldown: 10
+    power: 2.0
+    range: 4.5
+    lore: ["&7세 바퀴 돌며 둘레를 벤다"]
+  w7_guard:
+    name: "&b얼음 갑주"
+    type: 수호
+    cooldown: 26
+    power: 4
+    duration: 10
+    lore: ["&7얼음이 몸을 감싼다"]
+
+  # w8 강철 검 — 빠른 쪽. 기술은 아래 전사(wariar_*) 칸에 있습니다
+
+  # w11 화염 대검 — 태우는 쪽. 전용 기술은 아래 W11 칸에 있습니다
+
+  # w12 불티 검
+  w12_slash:
+    name: "&6불티 참격"
+    type: 참격
+    cooldown: 6
+    power: 2.1
+    range: 8
+    lore: ["&7달군 날이 앞을 가른다"]
+  w12_fissure:
+    name: "&6불티 균열"
+    type: 균열
+    cooldown: 13
+    power: 2.4
+    range: 11
+    lore: ["&7땅이 갈라지며 나아간다"]
+  w12_whirl:
+    name: "&6불티 회전"
+    type: 회전베기
+    cooldown: 10
+    power: 2.0
+    range: 4.5
+    lore: ["&7세 바퀴 돌며 둘레를 벤다"]
+  w12_meteor:
+    name: "&6불티 낙성"
+    type: 운석
+    cooldown: 25
+    power: 3.4
+    range: 5
+    duration: 4
+    lore: ["&7하늘에서 불덩이가 떨어진다"]
+
+  # w16 청금 지팡이 — 모았다 쏟아내는 쪽. 기술은 마법사(wizard_*) 칸에
+
+  # w17 금빛 단검 — 기술은 암살자(assasin_*) 칸에
+
+  # w18 돌망치 — 무겁게 내리찍는 쪽
+  w18_leap:
+    name: "&7돌망치 내리찍기"
+    type: 도약
+    cooldown: 13
+    power: 3.2
+    range: 5.5
+    lore: ["&7무겁게 뛰어올랐다 내리찍는다"]
+  w18_fissure:
+    name: "&7대지 균열"
+    type: 균열
+    cooldown: 15
+    power: 3.0
+    range: 12
+    lore: ["&7땅이 갈라지며 멀리 나아간다"]
+  w18_upper:
+    name: "&7분쇄"
+    type: 띄우기
+    cooldown: 12
+    power: 2.4
+    range: 4
+    lore: ["&7통째로 띄워 올린다"]
+  w18_guard:
+    name: "&7바위 갑주"
+    type: 수호
+    cooldown: 24
+    power: 4
+    duration: 10
+    lore: ["&7바위가 몸을 감싼다"]
+
+  # w21 사냥 활
+  w21_barrage:
+    name: "&6사냥 연사"
+    type: 연사
+    cooldown: 8
+    power: 1.9
+    lore: ["&7화살을 부채꼴로 쏟아낸다"]
+  w21_pierce:
+    name: "&6관통 사격"
+    type: 꿰뚫기
+    cooldown: 7
+    power: 2.1
+    range: 16
+    lore: ["&7한 줄에 선 것을 다 꿰뚫는다"]
+  w21_dash:
+    name: "&6사냥꾼의 도약"
+    type: 돌진
+    cooldown: 10
+    power: 1.6
+    range: 8
+    lore: ["&7뒤로 빠지듯 뛰어든다"]
+  w21_focus:
+    name: "&6사냥꾼의 집중"
+    type: 각성
+    cooldown: 25
+    power: 3
+    duration: 9
+    lore: ["&7손이 아주 빨라진다"]
+
+  # w32 황금 의례검
+  w32_slash:
+    name: "&e의례의 참격"
+    type: 참격
+    cooldown: 6
+    power: 2.3
+    range: 9
+    lore: ["&7금빛 검기가 멀리 뻗는다"]
+  w32_whirl:
+    name: "&e의례의 회전"
+    type: 회전베기
+    cooldown: 10
+    power: 2.2
+    range: 4.5
+    lore: ["&7세 바퀴 돌며 둘레를 벤다"]
+  w32_chain:
+    name: "&e의례의 연쇄"
+    type: 연쇄
+    cooldown: 13
+    power: 2.4
+    range: 9
+    lore: ["&7금빛 번개가 튀어 옮겨 간다"]
+  w32_meteor:
+    name: "&e의례의 낙성"
+    type: 운석
+    cooldown: 27
+    power: 3.8
+    range: 5
+    duration: 4
+    lore: ["&7하늘에서 불덩이가 떨어진다"]
+
+  # 방패 — 지키는 쪽
+  shield_guard:
+    name: "&f방패 올리기"
+    type: 수호
+    cooldown: 20
+    power: 3
+    duration: 8
+    lore: ["&7잠깐 아주 단단해진다"]
+  shield_bash:
+    name: "&f방패 밀치기"
+    type: 돌진
+    cooldown: 12
+    power: 1.5
+    range: 6
+    lore: ["&7밀어붙이며 뚫고 지나간다"]
+
+  # 쇠스랑
+  fork_pierce:
+    name: "&f쇠스랑 찌르기"
+    type: 꿰뚫기
+    cooldown: 8
+    power: 1.7
+    range: 10
+    lore: ["&7앞을 찌른다"]
+  fork_upper:
+    name: "&f쇠스랑 들어올리기"
+    type: 띄우기
+    cooldown: 12
+    power: 1.6
+    range: 3.5
+    lore: ["&7찍어 올린다"]
+
+  # ══════════════════════════════════════════════════════════════ 바닐라
+  # 커스텀 무기가 없어도 한 번은 써 보게 합니다. 값은 낮게 잡았습니다.
+  v_slash:
+    name: "&f내려베기"
+    type: 참격
+    cooldown: 10
+    power: 1.3
+    range: 6
+    lore: ["&7앞을 벤다"]
+  v_whirl:
+    name: "&f휘두르기"
+    type: 회전베기
+    cooldown: 14
+    power: 1.2
+    range: 3.5
+    lore: ["&7둘레를 벤다"]
+  v_leap:
+    name: "&f내리찍기"
+    type: 도약
+    cooldown: 15
+    power: 1.6
+    range: 3.5
+    lore: ["&7뛰어올랐다 내리찍는다"]
+  v_pierce:
+    name: "&f찌르기"
+    type: 꿰뚫기
+    cooldown: 11
+    power: 1.4
+    range: 9
+    lore: ["&7앞을 찌른다"]
+  v_barrage:
+    name: "&f흩뿌리기"
+    type: 연사
+    cooldown: 12
+    power: 1.2
+    lore: ["&7화살을 부채꼴로 쏜다"]
+
+  # ═══════════════════════════════════════ 강림도령의 붓 — 받아 온 보스 팩
+  #
+  # 원본은 아이템에 스킬을 직접 달았지만(`~onSwing`) 그건 **Mythic Crucible
+  # (유료)** 기능이라 무료판에서는 안 나갑니다. 그래서 여기에 걸고
+  # `mythic-skill` 로 그 스킬을 대신 쏩니다.
+  #
+  # 쿨다운은 MythicMobs 쪽에도 따로 있습니다(Gangrim_Melee 는 0.5초).
+  # 둘 중 긴 쪽이 실제 쿨다운이 됩니다.
+  # 이름은 원본 팩의 것(죽패지·열명)을 그대로 쓰지 않고 **무엇이 일어나는지
+  # 보이는 이름**으로 바꿨습니다. 이름만 보고 뭘 하는 스킬인지 알 수 없으면
+  # 아무도 안 씁니다.
+  gangrim_melee:
+    name: "&f검기 베기"
+    type: 마법
+    mythic-skill: Gangrim_Melee
+    cooldown: 1
+    power: 0.55
+    range: 5.0
+    lore:
+      - "&7붓을 휘둘러 &f검기&7를 날립니다"
+      - ""
+      - "&8연달아 누르면 &7세 번까지 이어집니다&8."
+      - "&8세 번째가 제일 넓게 벱니다. 쉬지 않고"
+      - "&8이어 치는 것이 이 무기의 기본입니다"
+  gangrim_jukpaeji:
+    name: "&e부적 세 장"
+    type: 마법
+    mythic-skill: Gangrim_Jukpaeji
+    cooldown: 8
+    power: 1.9
+    range: 8.0
+    lore:
+      - "&7뒤로 물러나며 &e부적 세 장&7을 날립니다"
+      - ""
+      - "&8부적은 부챗살로 퍼져 나가 각각 맞힙니다."
+      - "&8쓰는 순간 뒤로 밀리니 &7거리를 벌릴 때&8도 씁니다"
+  gangrim_yeolmyeong:
+    name: "&c이름 부르기"
+    type: 마법
+    mythic-skill: Gangrim_Yeolmyeong
+    cooldown: 12
+    power: 2.7
+    range: 9.0
+    lore:
+      - "&7앞의 적을 &c공중으로 띄웁니다"
+      - ""
+      - "&8붓이 둘레를 돌다 부적이 서면 터집니다."
+      - "&8띄운 동안은 상대가 움직이지 못하니,"
+      - "&8&7검기 베기&8로 이어 치기 좋습니다"
+  gangrim_jangseung:
+    name: "&6장승 세우기"
+    type: 마법
+    mythic-skill: Gangrim_Jangseung
+    cooldown: 20
+    power: 3.6
+    range: 10.0
+    lore:
+      - "&7앞에 &6장승&7을 세웁니다"
+      - ""
+      - "&8장승은 잠시 서서 둘레의 적을 &7빨아들이고&8,"
+      - "&8모인 것들을 한꺼번에 터뜨립니다."
+      - "&8흩어진 무리를 모을 때 씁니다"
+
+  # ═══════════════════════════════════ W11 화염 대검 — 전용 기술 넷
+  #
+  # 이 무기 하나만을 위한 것이라 Prowess 안에서도 따로(FireArts) 짰습니다.
+  # 그림도 전용입니다 — CraftEngine 팩 `w11fx` 의 불 초승달·화염파·화염진·
+  # 불기둥 예순 장.
+  #
+  # 넷이 한 가락으로 이어지게 값을 맞췄습니다:
+  #   열파로 몰아치다 → 낙인을 찍어 두고 → 열파로 더 때리고 → 낙인이 터지고
+  #   → 흩어지면 업화로 모으고 → 마무리는 극염 해방
+  w11_heat_wave:
+    name: "&6열파"
+    type: 열파
+    cooldown: 1.2
+    power: 1.15
+    range: 11
+    lore:
+      - "&7불 초승달을 날립니다"
+      - ""
+      - "&8쉬지 않고 누르면 &73연격&8이 됩니다. 이어 칠수록"
+      - "&8커지고 세 번째는 십자로 두 번 벱니다."
+      - "&83초 쉬면 처음으로 돌아갑니다"
+  w11_brand:
+    name: "&c화염 낙인"
+    type: 화염 낙인
+    cooldown: 11
+    power: 2.4
+    range: 7
+    lore:
+      - "&7앞의 적에게 &c낙인&7을 찍습니다"
+      - ""
+      - "&82초 뒤 한꺼번에 터집니다. 찍어 두고"
+      - "&8&7열파&8로 더 때린 다음 터뜨리는 것이 요령입니다"
+  w11_ascend:
+    name: "&6업화"
+    type: 업화
+    cooldown: 9
+    power: 1.9
+    range: 5.5
+    lore:
+      - "&7뛰어올라 &6내리찍습니다"
+      - ""
+      - "&8닿는 순간 불고리가 퍼지고 둘레를 밀쳐 냅니다."
+      - "&8가운데일수록 아픕니다. 흩어진 무리를 모을 때"
+  w11_release:
+    name: "&b극염 해방"
+    type: 극염 해방
+    cooldown: 34
+    power: 4.2
+    range: 9
+    lore:
+      - "&7보는 자리에 &b화염진&7을 깔고,"
+      - "&71.2초 뒤 &b푸른 불기둥&7이 솟습니다"
+      - ""
+      - "&8뜸이 긴 대신 제일 셉니다. 터진 자리에는"
+      - "&83초간 불바다가 남아 계속 태웁니다"
+
+  # ═══════════════════════════ 전사(wariar) — 받아 온 팩
+  #
+  # 원본은 MMOItems 무기에 걸려 있었습니다. 그 플러그인이 없어서 스킬만
+  # 가져와 Prowess 무기 칸에 겁니다. 보이는 연출은 MythicMobs 가 갑옷
+  # 거치대에 그림을 씌워 냅니다 — 팩의 그림 여러 장을 한 틱씩 갈아 끼웁니다.
+  wariar_rc:
+    name: "&f강철 분쇄"
+    type: 마법
+    mythic-skill: wariar_rc
+    cooldown: 6
+    power: 1.3
+    range: 7.0
+    lore:
+      - "&7앞을 향해 크게 내리칩니다"
+      - "&8닿은 자리에 잠깐 장판이 남습니다"
+  wariar_src:
+    name: "&f강철 투척"
+    type: 마법
+    mythic-skill: wariar_src
+    cooldown: 9
+    power: 1.9
+    range: 8.0
+    lore:
+      - "&7무기를 던져 &f꿰뚫습니다"
+      - "&8멀리 있는 것을 끌어들일 때"
+  wariar_lc:
+    name: "&f강철 연격"
+    type: 마법
+    mythic-skill: wariar_lc
+    cooldown: 1.2
+    power: 0.55
+    range: 5.0
+    lore:
+      - "&7이어서 벱니다"
+      - "&8쉬지 않고 누르면 동작이 바뀝니다"
+  wariar_slc:
+    name: "&f대지 가르기"
+    type: 마법
+    mythic-skill: wariar_slc
+    cooldown: 14
+    power: 2.7
+    range: 9.0
+    lore:
+      - "&7땅을 갈라 앞으로 뻗어 나갑니다"
+      - "&8줄지어 선 것을 한 번에"
+
+  # ═══════════════════════════ 암살자(assasin) — 받아 온 팩
+  #
+  # 원본은 MMOItems 무기에 걸려 있었습니다. 그 플러그인이 없어서 스킬만
+  # 가져와 Prowess 무기 칸에 겁니다. 보이는 연출은 MythicMobs 가 갑옷
+  # 거치대에 그림을 씌워 냅니다 — 팩의 그림 여러 장을 한 틱씩 갈아 끼웁니다.
+  assasin_rc:
+    name: "&8그림자 표창"
+    type: 마법
+    mythic-skill: assasin_rc
+    cooldown: 5
+    power: 1.3
+    range: 7.0
+    lore:
+      - "&7그림자를 날려 맞힙니다"
+  assasin_src:
+    name: "&8연막"
+    type: 마법
+    mythic-skill: assasin_src
+    cooldown: 11
+    power: 2.7
+    range: 9.0
+    lore:
+      - "&7연막을 터뜨리고 흩어집니다"
+  assasin_lc:
+    name: "&8쇄도"
+    type: 마법
+    mythic-skill: assasin_lc
+    cooldown: 1.0
+    power: 0.55
+    range: 5.0
+    lore:
+      - "&7파고들며 빠르게 벱니다"
+      - "&8이어 치면 동작이 바뀝니다"
+  assasin_slc:
+    name: "&8처형"
+    type: 마법
+    mythic-skill: assasin_slc
+    cooldown: 16
+    power: 2.7
+    range: 9.0
+    lore:
+      - "&7뜸을 들였다가 &c크게 한 번&7 벱니다"
+
+  # ═══════════════════════════ 마법사(wizard) — 받아 온 팩
+  #
+  # 원본은 MMOItems 무기에 걸려 있었습니다. 그 플러그인이 없어서 스킬만
+  # 가져와 Prowess 무기 칸에 겁니다. 보이는 연출은 MythicMobs 가 갑옷
+  # 거치대에 그림을 씌워 냅니다 — 팩의 그림 여러 장을 한 틱씩 갈아 끼웁니다.
+  # 이름과 색을 실물에 맞췄습니다 (2026-08-09).
+  #
+  # 이 팩은 **파란 얼음이 아니라 주황 불**입니다 — 원본 MagicSpells 색이
+  # #FF8000 이고 팩 그림 대표색이 #F07800 입니다. 그런데 이름이 "얼음 창"
+  # 이고 색 코드가 전부 &b(하늘색)였습니다.
+  #
+  # 무엇이 나가는지는 MythicMobs 설정을 읽어서 확인했습니다.
+  wizard_rc:
+    name: "&6화염탄"
+    type: 마법
+    mythic-skill: wizard_rc
+    cooldown: 4
+    power: 1.3
+    range: 7.0
+    lore:
+      - "&7불덩이를 뭉쳐 쏩니다"
+      - "&8닿는 자리에서 터집니다"
+  # 하늘 스무 칸 위에서 중력을 받아 떨어집니다 (syo=20, g=2).
+  # "얼음 창" 이 아니라 운석입니다
+  wizard_src:
+    name: "&c운석 낙하"
+    type: 마법
+    mythic-skill: wizard_src
+    cooldown: 10
+    power: 1.9
+    range: 8.0
+    lore:
+      - "&7하늘에서 &c불덩이&7를 떨어뜨립니다"
+      - "&8머리 위에서 내려오니 자리를 옮기면 피합니다"
+  wizard_lc:
+    name: "&6연발"
+    type: 마법
+    mythic-skill: wizard_lc
+    cooldown: 0.9
+    power: 0.55
+    range: 5.0
+    lore:
+      - "&7작은 불탄을 잇달아 쏩니다"
+      - "&8기본 공격 대신 씁니다"
+  # 폭발 셋이 5·10·15칸 앞으로 차례로 번집니다
+  wizard_slc:
+    name: "&6연쇄 폭발"
+    type: 마법
+    mythic-skill: wizard_slc
+    cooldown: 18
+    power: 3.6
+    range: 10.0
+    lore:
+      - "&7앞으로 &6세 번&7 잇달아 터집니다"
+      - "&8한 줄로 늘어선 것에 다 들어갑니다"
+
+  # ═══════════════════════════ 궁수(ranger) — 받아 온 팩
+  #
+  # 원본은 MMOItems 무기에 걸려 있었습니다. 그 플러그인이 없어서 스킬만
+  # 가져와 Prowess 무기 칸에 겁니다. 보이는 연출은 MythicMobs 가 갑옷
+  # 거치대에 그림을 씌워 냅니다 — 팩의 그림 여러 장을 한 틱씩 갈아 끼웁니다.
+  ranger_rc:
+    name: "&a도약 사격"
+    type: 마법
+    mythic-skill: ranger_rc
+    cooldown: 8
+    power: 1.9
+    range: 8.0
+    lore:
+      - "&7뒤로 뛰며 쏩니다"
+      - "&8거리를 벌릴 때"
+  # 위에서 쏟아집니다 — MythicMobs 쪽이 f=12,y=10 에 소환합니다
+  ranger_src:
+    name: "&a화살비"
+    type: 마법
+    mythic-skill: ranger_src
+    cooldown: 9
+    power: 1.9
+    range: 8.0
+    lore:
+      - "&7꿰뚫는 화살을 날립니다"
+  ranger_lc:
+    name: "&a속사"
+    type: 마법
+    mythic-skill: ranger_lc
+    cooldown: 0.9
+    power: 0.55
+    range: 5.0
+    lore:
+      - "&7빠르게 잇달아 쏩니다"
+  # 멀리 곧게 뻗습니다 (mr=25). 이름이 화살비와 뒤바뀌어 있었습니다
+  ranger_slc:
+    name: "&a관통 화살"
+    type: 마법
+    mythic-skill: ranger_slc
+    cooldown: 15
+    power: 2.7
+    range: 9.0
+    lore:
+      - "&7화살을 쏟아붓습니다"
+
+  # ═══════════════════════════ 음유시인(bard) — 받아 온 팩
+  #
+  # 원본은 MMOItems 무기에 걸려 있었습니다. 그 플러그인이 없어서 스킬만
+  # 가져와 Prowess 무기 칸에 겁니다. 보이는 연출은 MythicMobs 가 갑옷
+  # 거치대에 그림을 씌워 냅니다 — 팩의 그림 여러 장을 한 틱씩 갈아 끼웁니다.
+  bard_rc:
+    name: "&d울림"
+    type: 마법
+    mythic-skill: bard_rc
+    cooldown: 7
+    power: 1.9
+    range: 8.0
+    lore:
+      - "&7소리를 퍼뜨려 둘레를 때립니다"
+  bard_src:
+    name: "&d음표 탄"
+    type: 마법
+    mythic-skill: bard_src
+    cooldown: 8
+    power: 1.9
+    range: 8.0
+    lore:
+      - "&7음표를 날립니다"
+  bard_lc:
+    name: "&d가락"
+    type: 마법
+    mythic-skill: bard_lc
+    cooldown: 1.0
+    power: 0.55
+    range: 5.0
+    lore:
+      - "&7가볍게 이어 칩니다"
+  bard_slc:
+    name: "&d합주"
+    type: 마법
+    mythic-skill: bard_slc
+    cooldown: 20
+    power: 3.6
+    range: 10.0
+    lore:
+      - "&7둘레에 &a힘을 나눠 줍니다"
+      - "&8혼자보다 여럿일 때 값이 있습니다"
+
+# ############################################################################
+#  무기에 걸기
+#
+#  칸마다 skill(어느 스킬) 과 unlock(열리는 강화 단계)을 적습니다.
+#  unlock 을 안 적으면 칸의 기본값(0 · 4 · 8 · 12)입니다.
+#
+#  **무기 이름과 스킬 이름은 한 낱말을 나눠 갖습니다.** "은잎 창" 을 들면
+#  "은잎 관통" 이 나와야 합니다. 무기 이름은 CraftEngine 쪽에 있습니다 —
+#  plugins/CraftEngine/resources/fox/configuration/items/w_series.yml
+#
+#  **아이디로 생김새를 짐작하지 마세요.** w11 은 번호와 색만 보면 지팡이
+#  같지만 화염 대검이고, w3 은 오래 "단검" 으로 적혀 있었지만 도살검입니다.
+#  scratchpad 의 render_items.py 로 그려서 봐야 압니다.
+# ############################################################################
+
+weapons:
+
+  # ---------------------------------------------------------------- 토파즈
+  "default:topaz_sword":
+    우클릭: { skill: topaz_slash }
+    웅크리기+우클릭: { skill: topaz_whirl }
+    좌클릭: { skill: topaz_leap }
+    웅크리기+좌클릭: { skill: topaz_guard }
+  "default:topaz_axe":
+    우클릭: { skill: topaz_cleave_axe }
+    웅크리기+우클릭: { skill: topaz_fissure }
+    좌클릭: { skill: topaz_upper }
+    웅크리기+좌클릭: { skill: topaz_exec }
+  "default:topaz_trident":
+    우클릭: { skill: topaz_pierce }
+    웅크리기+우클릭: { skill: topaz_dash }
+    좌클릭: { skill: topaz_nova }
+    웅크리기+좌클릭: { skill: topaz_meteor }
+  "default:topaz_bow":
+    우클릭: { skill: topaz_barrage }
+    웅크리기+우클릭: { skill: topaz_focus }
+    좌클릭: { skill: topaz_chain }
+  "default:topaz_crossbow":
+    우클릭: { skill: topaz_pierce }
+    웅크리기+우클릭: { skill: topaz_barrage }
+    좌클릭: { skill: topaz_chain }
+
+  # ------------------------------------------------------------ 어둠의 여왕
+  "fox:sword_dark_queen":
+    우클릭: { skill: dq_slash }
+    웅크리기+우클릭: { skill: dq_vortex }
+    좌클릭: { skill: dq_exec }
+    웅크리기+좌클릭: { skill: dq_meteor }
+  "fox:axe_dark_queen":
+    우클릭: { skill: dq_whirl }
+    웅크리기+우클릭: { skill: dq_fissure }
+    좌클릭: { skill: dq_leap }
+    웅크리기+좌클릭: { skill: dq_awaken }
+  "fox:spear_dark_queen":
+    우클릭: { skill: dq_pierce }
+    웅크리기+우클릭: { skill: dq_upper }
+    좌클릭: { skill: dq_dash }
+    웅크리기+좌클릭: { skill: dq_nova }
+  "fox:bow_dark_queen":
+    우클릭: { skill: dq_barrage }
+    웅크리기+우클릭: { skill: dq_chain }
+    좌클릭: { skill: dq_awaken }
+  "fox:staff_dark_queen":
+    우클릭: { skill: dq_chain }
+    웅크리기+우클릭: { skill: dq_nova }
+    좌클릭: { skill: dq_vortex }
+    웅크리기+좌클릭: { skill: dq_guard }
+
+  # ------------------------------------------------------------------ 숲빛
+  # 숲빛 도끼
+  "fox:g1":
+    우클릭: { skill: forest_leap }
+    웅크리기+우클릭: { skill: forest_whirl }
+    좌클릭: { skill: forest_dash }
+    웅크리기+좌클릭: { skill: forest_empower }
+  # 숲빛 방패
+  "fox:g6":
+    우클릭: { skill: shield_guard }
+    웅크리기+우클릭: { skill: shield_bash }
+
+  # -------------------------------------------------------------- W 시리즈
+  # 은잎 창
+  "fox:w2":
+    우클릭: { skill: w2_pierce }
+    웅크리기+우클릭: { skill: w2_upper }
+    좌클릭: { skill: w2_dash }
+    웅크리기+좌클릭: { skill: w2_fissure }
+  # 혈화도 — 전용 스킬 넷. 순서대로 쌓아 마무리합니다
+  "fox:w3":
+    우클릭: { skill: w3_rend }
+    # 웅크리기 두 칸을 맞바꿨습니다 (2026-08-09).
+    # 해금 단계는 스킬을 따라갑니다 — 처형 무도는 마무리라 12 그대로입니다
+    웅크리기+우클릭: { skill: w3_waltz, unlock: 12 }
+    좌클릭: { skill: w3_brand, unlock: 7 }
+    웅크리기+좌클릭: { skill: w3_shadow, unlock: 3 }
+  # 나무 활 — 궁수 기술 넷
+  "fox:w4":
+    우클릭: { skill: ranger_rc }
+    웅크리기+우클릭: { skill: ranger_src, unlock: 4 }
+    좌클릭: { skill: ranger_lc }
+    웅크리기+좌클릭: { skill: ranger_slc, unlock: 8 }
+  # 서릿날
+  "fox:w7":
+    우클릭: { skill: w7_slash }
+    웅크리기+우클릭: { skill: w7_nova }
+    좌클릭: { skill: w7_whirl }
+    웅크리기+좌클릭: { skill: w7_guard }
+  # 강철 검 — 전사 기술 넷
+  "fox:w8":
+    우클릭: { skill: wariar_rc }
+    웅크리기+우클릭: { skill: wariar_src, unlock: 4 }
+    좌클릭: { skill: wariar_lc }
+    웅크리기+좌클릭: { skill: wariar_slc, unlock: 8 }
+  # 가락 지팡이 — 음유시인 기술 넷
+  "fox:w10":
+    우클릭: { skill: bard_rc }
+    웅크리기+우클릭: { skill: bard_src, unlock: 4 }
+    좌클릭: { skill: bard_lc }
+    웅크리기+좌클릭: { skill: bard_slc, unlock: 8 }
+  # 화염 대검. 전용 기술 넷입니다
+  "fox:w11":
+    우클릭: { skill: w11_heat_wave }
+    웅크리기+우클릭: { skill: w11_brand, unlock: 4 }
+    좌클릭: { skill: w11_ascend, unlock: 8 }
+    웅크리기+좌클릭: { skill: w11_release, unlock: 12 }
+  # 불티 검
+  "fox:w12":
+    우클릭: { skill: w12_slash }
+    웅크리기+우클릭: { skill: w12_fissure }
+    좌클릭: { skill: w12_whirl }
+    웅크리기+좌클릭: { skill: w12_meteor }
+  # 참나무 방패
+  "fox:w14":
+    우클릭: { skill: shield_guard }
+    웅크리기+우클릭: { skill: shield_bash }
+  # 청금 지팡이 — 마법사 기술 넷
+  "fox:w16":
+    우클릭: { skill: wizard_rc }
+    # 웅크리기 두 칸을 맞바꿨습니다 (2026-08-09).
+    # 해금 단계는 **힘을 따라갑니다** — 운석이 제일 크므로 마지막 칸입니다
+    웅크리기+우클릭: { skill: wizard_slc, unlock: 4 }
+    좌클릭: { skill: wizard_lc }
+    웅크리기+좌클릭: { skill: wizard_src, unlock: 12 }
+  # 금빛 단검 — 암살자 기술 넷
+  "fox:w17":
+    우클릭: { skill: assasin_rc }
+    웅크리기+우클릭: { skill: assasin_src, unlock: 4 }
+    좌클릭: { skill: assasin_lc }
+    웅크리기+좌클릭: { skill: assasin_slc, unlock: 8 }
+  # 돌망치
+  "fox:w18":
+    우클릭: { skill: w18_leap }
+    웅크리기+우클릭: { skill: w18_fissure }
+    좌클릭: { skill: w18_upper }
+    웅크리기+좌클릭: { skill: w18_guard }
+  # 사냥 활
+  "fox:w21":
+    우클릭: { skill: w21_barrage }
+    웅크리기+우클릭: { skill: w21_pierce }
+    좌클릭: { skill: w21_dash }
+    웅크리기+좌클릭: { skill: w21_focus }
+  # 황금 의례검
+  "fox:w32":
+    우클릭: { skill: w32_slash }
+    웅크리기+우클릭: { skill: w32_whirl }
+    좌클릭: { skill: w32_chain }
+    웅크리기+좌클릭: { skill: w32_meteor }
+
+  # -------------------------------------------------------------------- 그 밖
+  "bk:pitchfork":
+    우클릭: { skill: fork_pierce }
+    웅크리기+우클릭: { skill: fork_upper }
+
+  # ------------------------------------------------------------------ 바닐라
+  #
+  # **아무것도 안 겁니다.** 다이아 검 · 네더라이트 검 · 네더라이트 도끼 ·
+  # 활 · 삼지창 · 방패에 스킬이 걸려 있었는데 걷어냈습니다 (2026-08-09).
+  #
+  # 까닭은 두 가지입니다.
+  #   1. 바닐라 장비는 **누구나 첫날에 만듭니다.** 거기에 스킬이 붙으면
+  #      커스텀 무기를 얻을 이유가 사라집니다
+  #   2. 곡괭이질하다 우클릭만 해도 스킬이 나가 성가십니다
+  #
+  # 아래 v_* 스킬들은 지운 것이 아니라 **걸 곳만 뗀 것**입니다. 새 무기에
+  # 그대로 쓸 수 있습니다.
+
+  # 강림도령의 붓 — 받아 온 보스 팩의 스킬을 그대로 씁니다
+  "gangrim:gangrim_brush":
+    우클릭: { skill: gangrim_melee }
+    웅크리기+우클릭: { skill: gangrim_jukpaeji, unlock: 3 }
+    좌클릭: { skill: gangrim_yeolmyeong, unlock: 7 }
+    웅크리기+좌클릭: { skill: gangrim_jangseung, unlock: 12 }
