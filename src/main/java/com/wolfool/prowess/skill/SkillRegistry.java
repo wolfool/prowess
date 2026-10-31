@@ -60,6 +60,14 @@ public final class SkillRegistry {
             }
          }
 
+         Map<String, String> abilityMap = new LinkedHashMap<>();
+         ConfigurationSection mapSec = y.getConfigurationSection("ability-map");
+         if (mapSec != null) {
+            for (String alias : mapSec.getKeys(false)) {
+               abilityMap.put(alias.toLowerCase(Locale.ROOT), mapSec.getString(alias));
+            }
+         }
+
          ConfigurationSection weapons = y.getConfigurationSection("weapons");
          if (weapons != null) {
             for (String weapon : weapons.getKeys(false)) {
@@ -68,6 +76,27 @@ public final class SkillRegistry {
                   WeaponSkills ws = new WeaponSkills(weapon);
 
                   for (String bindKey : w.getKeys(false)) {
+                     if (bindKey.toLowerCase(Locale.ROOT).startsWith("ability")) {
+                        // MMOItems 형식: ability0: { type: SK_C_LC, mode: LEFT_CLICK, cooldown: 0.1, damage: 5 }
+                        ConfigurationSection ab = w.getConfigurationSection(bindKey);
+                        if (ab != null) {
+                           String type = ab.getString("type");
+                           String mapped = type == null ? null : abilityMap.getOrDefault(type.toLowerCase(Locale.ROOT), type);
+                           Skill abSkill = mapped == null ? null : this.byId.get(mapped);
+                           Bind abBind = Bind.byName(ab.getString("mode"));
+                           if (abSkill == null) {
+                              this.plugin.getLogger().warning("무기 '" + weapon + "' 의 '" + bindKey + "' 스킬 '" + type + "' 을 못 찾았습니다 (ability-map).");
+                           } else if (abBind == null) {
+                              this.plugin.getLogger().warning("무기 '" + weapon + "' 의 '" + bindKey + "' mode '" + ab.getString("mode") + "' 가 올바르지 않습니다.");
+                           } else {
+                              double cd = ab.getDouble("cooldown", -1.0);
+                              Skill use = cd < 0.0 ? abSkill : new Skill(abSkill.id(), abSkill.name(), abSkill.type(), cd, abSkill.power(), abSkill.range(), abSkill.duration(), abSkill.lore(), abSkill.mythicSkill(), abSkill.bleed());
+                              ws.put(abBind, use, ab.getInt("unlock", 0));
+                           }
+                        }
+                        continue;
+                     }
+
                      Bind bind = Bind.byName(bindKey);
                      if (bind == null) {
                         this.plugin.getLogger().warning("무기 '" + weapon + "' 의 칸 '" + bindKey + "' 이 올바르지 않습니다 (우클릭 · 웅크리기+우클릭 · 좌클릭 · 웅크리기+좌클릭).");

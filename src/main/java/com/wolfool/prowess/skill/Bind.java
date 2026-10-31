@@ -50,6 +50,13 @@ public enum Bind {
             case "shift-right", "shiftright", "웅크리기+우클릭", "쉬프트우클릭", "쉬우" -> SHIFT_RIGHT;
             case "left", "좌클릭", "좌" -> LEFT;
             case "shift-left", "shiftleft", "웅크리기+좌클릭", "쉬프트좌클릭", "쉬좌" -> SHIFT_LEFT;
+             // MMOItems ability 의 mode 이름들 (2026-10-31)
+             case "right-click", "rightclick", "rc" -> RIGHT;
+             case "left-click", "leftclick", "lc" -> LEFT;
+             case "shift-right-click", "shiftrightclick", "src" -> SHIFT_RIGHT;
+             case "shift-left-click", "shiftleftclick", "slc" -> SHIFT_LEFT;
+             // MMOItems 의 ATTACK(때릴 때) — 좌클릭 경로가 '허공+때리기'를 이미 다 봅니다
+             case "attack" -> LEFT;
             default -> null;
          };
       } else {
