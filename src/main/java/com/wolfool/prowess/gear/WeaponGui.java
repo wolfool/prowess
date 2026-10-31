@@ -151,7 +151,7 @@ public final class WeaponGui implements Listener {
       }
 
       lore.add("");
-      lore.add("&e클릭 &7받기 &8· &e쉬프트 클릭 &7&f+12&7 로 받기");
+      lore.add("&e클릭 &7받기 &8· &e쉬프트 클릭 &7&f+14&7 로 받기");
       meta.lore(Msg.lines(lore));
       meta.addItemFlags(new ItemFlag[]{ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ADDITIONAL_TOOLTIP});
       it.setItemMeta(meta);
@@ -177,7 +177,7 @@ public final class WeaponGui implements Listener {
             "&8무기를 새로 만들면 여기에 저절로 들어옵니다.",
             "",
             "&e클릭 &7— 그냥 받기",
-            "&e쉬프트 클릭 &7— &f+12 &7로 받기 (스킬 넷이 다 열립니다)",
+            "&e쉬프트 클릭 &7— &f+14 &7로 받기 (스킬 넷이 다 열립니다)",
             "&8스킬을 시험하려면 강화된 채로 받는 게 빠릅니다"
          )
       );
@@ -230,7 +230,7 @@ public final class WeaponGui implements Listener {
                      ItemStack give = this.make(key);
                      ProwessConfig.GearEntry entry = this.config.entryFor(key.indexOf(58) >= 0 ? key : null, give.getType());
                      StatMap stats = entry == null ? StatMap.empty() : entry.stats();
-                     int level = event.isShiftClick() ? Math.min(12, this.config.maxLevel()) : 0;
+                     int level = event.isShiftClick() ? Math.min(14, this.config.maxLevel()) : 0;
                      this.gear.write(give, stats, level, this.config.enhancePerLevel());
                      player.getInventory()
                         .addItem(new ItemStack[]{give})
