@@ -3,6 +3,8 @@ package com.wolfool.prowess.skill;
 import com.wolfool.prowess.gear.GearStats;
 import com.wolfool.prowess.util.Msg;
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -58,7 +60,17 @@ public final class SkillListener implements Listener {
       if (event.getHand() == EquipmentSlot.HAND) {
          Player player = event.getPlayer();
          Bind bind = player.isSneaking() ? Bind.SHIFT_RIGHT : Bind.RIGHT;
-         if (this.fire(player, bind, true)) {
+         boolean cancel = this.fire(player, bind, true);
+         if (!cancel) {
+            // 스킬이 안 나간 순간(쿨다운 등)에도 무기가 갑옷거치대·액자로 넘어가 사라지지 않게 (2026-11-01)
+            ItemStack held = player.getInventory().getItemInMainHand();
+            if (!held.getType().isAir()
+               && this.registry.forItem(held) != null
+               && (event.getRightClicked() instanceof ArmorStand || event.getRightClicked() instanceof ItemFrame)) {
+               cancel = true;
+            }
+         }
+         if (cancel) {
             event.setCancelled(true);
          }
       }
