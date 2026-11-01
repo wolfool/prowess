@@ -93,6 +93,10 @@ public final class SkillService {
       this.lastCast.remove(player.getUniqueId());
    }
 
+   public boolean isMythicMob(org.bukkit.entity.Entity entity) {
+      return entity != null && this.mythic.mobType(entity) != null;
+   }
+
    public boolean use(Player player, Skill skill) {
       double left = this.remaining(player, skill);
       if (left > 0.0) {

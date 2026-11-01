@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
@@ -74,6 +75,28 @@ public final class SkillListener implements Listener {
             event.setCancelled(true);
          }
       }
+   }
+
+   // 갑옷거치대는 PlayerArmorStandManipulateEvent 라는 **자체 핸들러 목록**의 별도 이벤트로 온다.
+   // 위 onInteractEntity 는 갑옷거치대에겐 아예 불리지 않는다 — 그래서 전용 상대가 필요하다 (2026-11-01 밤).
+   // 겸사겸사 갑옷거치대를 향한 우클릭도 스킬로 쏴 준다 (다른 몹과 같은 손맛).
+   @EventHandler(priority = EventPriority.LOWEST)
+   public void onArmorStandManipulate(PlayerArmorStandManipulateEvent event) {
+      Player player = event.getPlayer();
+      Bind bind = player.isSneaking() ? Bind.SHIFT_RIGHT : Bind.RIGHT;
+      boolean cancel = this.fire(player, bind, true);
+      if (!cancel && (this.protectedItem(player.getInventory().getItemInMainHand())
+            || this.protectedItem(player.getInventory().getItemInOffHand())
+            || this.service.isMythicMob(event.getRightClicked()))) {
+         cancel = true;
+      }
+      if (cancel) {
+         event.setCancelled(true);
+      }
+   }
+
+   private boolean protectedItem(ItemStack item) {
+      return item != null && !item.getType().isAir() && this.registry.forItem(item) != null;
    }
 
    private boolean fire(Player player, Bind bind, boolean loud) {

@@ -14,7 +14,7 @@ $srcs = @(Get-ChildItem (Join-Path $root 'src\main\java') -Recurse -File -Filter
 & $javac -encoding UTF-8 -classpath $libs -d $out $srcs
 if ($LASTEXITCODE -ne 0) { throw 'javac 실패' }
 Copy-Item (Join-Path $root 'src\main\resources\*') $out -Force
-$target = Join-Path $root 'out\Prowess-1.0.4.jar'
+$target = Join-Path $root 'out\Prowess-1.0.5.jar'
 & $jar --create --file $target -C $out .
 if ($LASTEXITCODE -ne 0) { throw 'jar 실패' }
 "OK -> $target"
